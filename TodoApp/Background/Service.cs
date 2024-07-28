@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using TodoApp.Configurations;
 
@@ -39,13 +40,10 @@ namespace TodoApp.Background
                     $project: { 
                         '_id': 1, 
                         'fullDocument': 1, 
-                        'ns': 1, 
                         'documentKey': 1 ,
                         'operationType': 1,
                         'updateDescription': 1,
                         'clusterTime': 1,
-                        'txnNumber': 1,
-                        'lsid': 1
                     }
                 }"
                 );
@@ -62,7 +60,9 @@ namespace TodoApp.Background
                 var batch = _changeStreamCursor.Current;
                 foreach (var change in batch)
                 {
-                    Console.WriteLine(change);
+                    var serializedChange = change.ToJson();
+                    var document = BsonSerializer.Deserialize<Domain.ChangeStream<BsonDocument>>(serializedChange);
+                    // Process the change
                 }
             }
         }
